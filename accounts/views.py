@@ -8,6 +8,8 @@ from django.contrib.auth.hashers import make_password
 from .serializers import *
 import random
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import AnonymousUser
+from django.http import HttpResponse
 
 # Create your views here.
 class PhoneVerify(APIView):
@@ -18,13 +20,23 @@ class PhoneVerify(APIView):
             code += str(random.randint(0, 9))
         return code
 
+    def verify(self, serializer):
+        serializer.is_valid(raise_exception=True)
+        generated_code = self.generate_code()
+        serializer.save(security_code=generated_code)
+        return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_200_OK)
+
     def post(self, request):
-        serializer = PhoneVerifySerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        input_phone = request.data['phone']
+        record = PhoneVerification.objects.filter(phone=input_phone)
+        if (record.exists()) and (not record.last().is_expired):
+            return Response({"message": "인증번호가 이미 발급되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            serializer = PhoneVerifySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
             generated_code = self.generate_code()
             serializer.save(security_code=generated_code)
-            return Response({"message":f"인증번호:{generated_code}"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_200_OK)
 
 
 class Register(APIView):
@@ -76,18 +88,22 @@ class UserProfile(APIView):
 
 class ResetPassword(APIView):
     permission_classes = [AllowAny]
-    def patch(self, request):
+    def post(self, request):
+
         input_code = request.data['security_code']
         code_record = PhoneVerification.objects.get(security_code=input_code)
         input_email = request.data['email']
 
-        if code_record.is_expired:
+        if request.user != AnonymousUser():
+            return Response({'message': '접근 권한이 없습니다.'}, status=status.HTTP_403_FORBIDDEN)
+
+        elif code_record.is_expired:
             return Response({'message': '인증번호가 만료되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         elif request.data['password'] != request.data['password2']:
             return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             instance = User.objects.get(email=input_email)
-            serializer = ResetPasswordSerializer(instance, data=request.data, partial=True)
+            serializer = ResetPasswordSerializer(instance, data=request.data)
             if serializer.is_valid(raise_exception=True):
                 # 비밀번호 암호화
                 serializer.save(password=make_password(request.data['password']))

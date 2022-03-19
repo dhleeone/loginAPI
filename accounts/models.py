@@ -56,11 +56,11 @@ class PhoneVerification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.phone} - {self.timestamp}"
+        return self.phone
 
     @property
     def is_expired(self):
-        expire_time = self.timestamp + timedelta(minutes=30)
+        expire_time = self.timestamp + timedelta(seconds=15)
         if now() > expire_time:
             return True
         return False
