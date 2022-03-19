@@ -33,11 +33,19 @@ class RegisterSerializer(serializers.ModelSerializer):
             'phone',
             'security_code'
         ]
-
     def validate_email(self, email):
         if User.objects.filter(email=email):
             raise ValidationError('이미 존재하는 이메일 입니다.')
         return email
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'password'
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -46,13 +54,19 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'email',
-            'password',
             'nickname',
             'name',
             'phone'
         ]
-        #extra_kwargs = {'password': {'write_only': True}}
-        #
-        # def create(self, validated_data):
-        #     validated_data['password'] = make_password(validated_data['password'])
-        #     return super(UserSerializer, self).create(validated_data)
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    security_code = SecurityCodeSerializer(read_only=True)
+    password2 = serializers.CharField(read_only=True)
+    class Meta:
+        model = User
+        fields = [
+            'security_code',
+            'email',
+            'password',
+            'password2'
+        ]
