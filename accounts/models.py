@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from datetime import timedelta
 from django.utils.timezone import now
 
-# Create your models here.
 
 class UserManager(BaseUserManager):
     def _create_user(self, email, username, password, **extra_fields):

@@ -3,14 +3,14 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import User, PhoneVerification
-from django.contrib.auth.hashers import make_password
-from .serializers import *
-import random
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import AnonymousUser
+from .models import User, PhoneVerification
+from .serializers import *
+import random
 
-# Create your views here.
+
+# 전화번호 인증 ---
 class PhoneVerify(APIView):
     permission_classes = [AllowAny]
     def generate_code(self):
@@ -32,6 +32,7 @@ class PhoneVerify(APIView):
             return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_200_OK)
 
 
+# 회원가입 ---
 class Register(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -48,13 +49,13 @@ class Register(APIView):
             else:
                 serializer = RegisterSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
-                # 비밀번호 암호화
-                serializer.save(password=make_password(request.data['password']))
+                serializer.save()
                 return Response({'message':'회원가입이 완료되었습니다.'}, status=status.HTTP_200_OK)
         except PhoneVerification.DoesNotExist:
             return Response({'message':'전화번호 인증을 진행해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 로그인 ---
 class Login(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -68,6 +69,7 @@ class Login(APIView):
             return Response({'message':'아이디 혹은 패스워드 오류입니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 유저 정보 조회 ---
 class UserProfile(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -80,6 +82,7 @@ class UserProfile(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+# 비밀번호 변경 ---
 class ResetPassword(APIView):
     permission_classes = [AllowAny]
     def patch(self, request):
@@ -90,17 +93,20 @@ class ResetPassword(APIView):
             instance = User.objects.get(email=input_email)
             if request.user != AnonymousUser():
                 return Response({'message': '접근 권한이 없습니다.'}, status=status.HTTP_403_FORBIDDEN)
+
             elif instance.phone != code_record.phone:
                 return Response({'message': '유효한 인증번호가 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
             elif instance.phone == code_record.phone and code_record.is_expired:
                 return Response({'message': '인증번호가 만료되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
             elif request.data['password'] != request.data['password2']:
                 return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
             else:
                 serializer = ResetPasswordSerializer(instance, data=request.data)
                 serializer.is_valid(raise_exception=True)
-                # 비밀번호 암호화
-                serializer.save(password=make_password(request.data['password']))
+                serializer.save()
                 return Response({'message': '비밀번호 변경이 완료되었습니다.'}, status=status.HTTP_200_OK)
 
         except PhoneVerification.DoesNotExist:
