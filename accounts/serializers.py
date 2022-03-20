@@ -59,6 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone'
         ]
 
+
 class ResetPasswordSerializer(serializers.ModelSerializer):
     security_code = SecurityCodeSerializer(read_only=True)
     password2 = serializers.CharField(read_only=True)

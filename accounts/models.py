@@ -60,7 +60,7 @@ class PhoneVerification(models.Model):
 
     @property
     def is_expired(self):
-        expire_time = self.timestamp + timedelta(seconds=15)
+        expire_time = self.timestamp + timedelta(minutes=10)
         if now() > expire_time:
             return True
         return False
