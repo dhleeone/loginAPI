@@ -14,6 +14,11 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
             'security_code'
         ]
 
+    def validate(self, data):
+        input_phone = data['phone']
+        if any(num.isalpha() for num in input_phone):
+            raise serializers.ValidationError("올바른 전화번호를 입력해주세요.")
+        return data
 
 # 인증 번호 Serializer ---
 class SecurityCodeSerializer(serializers.ModelSerializer):
@@ -103,3 +108,4 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
         instance.password = new_password
         instance.save()
         return instance
+

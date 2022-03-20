@@ -63,3 +63,4 @@ class PhoneVerification(models.Model):
         if now() > expire_time:
             return True
         return False
+
