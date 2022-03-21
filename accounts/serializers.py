@@ -46,7 +46,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         input_password = data['password']
-        input_email = data['email']
+        input_email = data['email'].split("@")[0]
         input_nickname = data['nickname']
         if not 7 < len(input_password) < 13:
             raise serializers.ValidationError("패스워드는 8자 이상 12자 이내로 만들어주세요.")
@@ -57,13 +57,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not any(char.isalpha() for char in input_password):
             raise serializers.ValidationError("패스워드에는 최소 1개의 영문자가 포함되어야 합니다.")
 
-        if input_password in input_email.split("@")[0] \
-                or input_email.split("@")[0] in input_password:
-            raise serializers.ValidationError("패스워드에는 이메일과 동일한 문자가 포함되어서는 안됩니다.")
+        if input_password in input_email \
+                or input_email in input_password:
+            raise serializers.ValidationError("패스워드에는 이메일과 동일한 문자열이 포함되어서는 안됩니다.")
 
         if input_password in input_nickname \
                 or input_nickname in input_password:
-            raise serializers.ValidationError("패스워드에는 닉네임과 동일한 문자가 포함되어서는 안됩니다.")
+            raise serializers.ValidationError("패스워드에는 닉네임과 동일한 문자열이 포함되어서는 안됩니다.")
         return data
 
     def create(self, validated_data):
