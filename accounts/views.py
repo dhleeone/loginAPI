@@ -15,7 +15,7 @@ class PhoneVerify(APIView):
     permission_classes = [AllowAny]
     def generate_code(self):
         code = ""
-        for i in range(6):
+        for _ in range(6):
             code += str(random.randint(0, 9))
         return code
 

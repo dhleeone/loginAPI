@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from rest_framework.serializers import ValidationError
 from .models import User, PhoneVerification
 
 
@@ -20,6 +19,7 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("올바른 전화번호를 입력해주세요.")
         return data
 
+
 # 인증 번호 Serializer ---
 class SecurityCodeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +30,7 @@ class SecurityCodeSerializer(serializers.ModelSerializer):
 # 회원가입 Serializer ---
 class RegisterSerializer(serializers.ModelSerializer):
     security_code = SecurityCodeSerializer(read_only=True)
-    password2 = serializers.CharField(read_only=True)
+    password2 = serializers.CharField(max_length=128, read_only=True)
     class Meta:
         model = User
         fields = [
@@ -50,13 +50,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         input_nickname = data['nickname']
         if not 7 < len(input_password) < 13:
             raise serializers.ValidationError("패스워드는 8자 이상 12자 이내로 만들어주세요.")
+
         if not any(char.isdigit() for char in input_password):
             raise serializers.ValidationError("패스워드에는 최소 1개의 숫자가 포함되어야 합니다.")
+
         if not any(char.isalpha() for char in input_password):
             raise serializers.ValidationError("패스워드에는 최소 1개의 영문자가 포함되어야 합니다.")
+
         if input_password in input_email.split("@")[0] \
                 or input_email.split("@")[0] in input_password:
             raise serializers.ValidationError("패스워드에는 이메일과 동일한 문자가 포함되어서는 안됩니다.")
+
         if input_password in input_nickname \
                 or input_nickname in input_password:
             raise serializers.ValidationError("패스워드에는 닉네임과 동일한 문자가 포함되어서는 안됩니다.")

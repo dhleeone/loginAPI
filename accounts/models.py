@@ -39,7 +39,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=30, blank=True)
     nickname = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=45)
-    phone = models.CharField('phone number', max_length=20, unique=True)
+    phone = models.CharField(max_length=20, unique=True)
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
@@ -51,7 +51,7 @@ class User(AbstractUser):
 
 class PhoneVerification(models.Model):
     phone = models.CharField(max_length=20)
-    security_code = models.CharField('security code', max_length=20, blank=True)
+    security_code = models.CharField(max_length=20, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -59,7 +59,7 @@ class PhoneVerification(models.Model):
 
     @property
     def is_expired(self):
-        expire_time = self.timestamp + timedelta(minutes=10)
+        expire_time = self.timestamp + timedelta(minutes=5)
         if now() > expire_time:
             return True
         return False
