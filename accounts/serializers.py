@@ -17,7 +17,7 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
     def validate(self, data):
         input_phone = data['phone']
         if any(num.isalpha() for num in input_phone):
-            raise serializers.ValidationError(message.PHONE_NUMBER_WARNING)
+            raise serializers.ValidationError(message.PHONE_NUMBER_ERROR)
         return data
 
 
@@ -50,13 +50,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         input_email = data['email'].split("@")[0]
         input_nickname = data['nickname']
         if not 7 < len(input_password) < 13:
-            raise serializers.ValidationError(message.PASSWORD_LENGTH_WARNING)
+            raise serializers.ValidationError(message.PASSWORD_LENGTH_ERROR)
 
         if not any(char.isdigit() for char in input_password):
-            raise serializers.ValidationError(message.PASSWORD_COMBINATION_WARNING)
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_ERROR)
 
         if not any(char.isalpha() for char in input_password):
-            raise serializers.ValidationError(message.PASSWORD_COMBINATION_WARNING)
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
 
         if input_password in input_email \
                 or input_email in input_password:
