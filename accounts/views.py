@@ -23,13 +23,13 @@ class PhoneVerify(APIView):
         input_phone = request.data['phone']
         record = PhoneVerification.objects.filter(phone=input_phone)
         if (record.exists()) and (not record.last().is_expired):
-            return Response({"message": "인증번호가 이미 발급되었습니다."}, status=status.HTTP_200_OK)
+            return Response({"message": "인증번호가 이미 발급되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             serializer = PhoneVerifySerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             generated_code = self.generate_code()
             serializer.save(security_code=generated_code)
-            return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_200_OK)
+            return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_201_CREATED)
 
 
 # 회원가입 ---
@@ -50,7 +50,7 @@ class Register(APIView):
                 serializer = RegisterSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
-                return Response({'message':'회원가입이 완료되었습니다.'}, status=status.HTTP_200_OK)
+                return Response({'message':'회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
         except PhoneVerification.DoesNotExist:
             return Response({'message':'전화번호 인증을 진행해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -66,7 +66,7 @@ class Login(APIView):
             login(request, user)
             return Response({'message':'로그인이 완료되었습니다.'}, status=status.HTTP_200_OK)
         else:
-            return Response({'message':'아이디 혹은 패스워드 오류입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'이메일 혹은 패스워드 오류입니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 유저 정보 조회 ---

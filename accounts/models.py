@@ -55,7 +55,7 @@ class PhoneVerification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.phone
+        return f"{self.phone} - {str(self.timestamp)[:10]}"
 
     @property
     def is_expired(self):
