@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import AnonymousUser
 from .models import User, PhoneVerification
+from .serializers import *
 from .constants import message
 import random
 
@@ -98,7 +99,7 @@ class ResetPassword(APIView):
                 return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             elif instance.phone == code_record.phone and code_record.is_expired:
-                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.CODE_EXPIRED_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             elif request.data['password'] != request.data['password2']:
                 return Response({'message': message.PASSWORD_MISMATCH_ERROR}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from .models import User, PhoneVerification
+from .constants import message
 
 
 # 전화번호 인증 Serializer ---
@@ -49,21 +50,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         input_email = data['email'].split("@")[0]
         input_nickname = data['nickname']
         if not 7 < len(input_password) < 13:
-            raise serializers.ValidationError("패스워드는 8자 이상 12자 이내로 만들어주세요.")
+            raise serializers.ValidationError(message.PASSWORD_LENGTH_WARNING)
 
         if not any(char.isdigit() for char in input_password):
-            raise serializers.ValidationError("패스워드에는 최소 1개의 숫자가 포함되어야 합니다.")
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_WARNING)
 
         if not any(char.isalpha() for char in input_password):
-            raise serializers.ValidationError("패스워드에는 최소 1개의 영문자가 포함되어야 합니다.")
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_WARNING)
 
         if input_password in input_email \
                 or input_email in input_password:
-            raise serializers.ValidationError("패스워드에는 이메일과 동일한 문자열이 포함되어서는 안됩니다.")
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_WARNING)
 
         if input_password in input_nickname \
                 or input_nickname in input_password:
-            raise serializers.ValidationError("패스워드에는 닉네임과 동일한 문자열이 포함되어서는 안됩니다.")
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_WARNING)
         return data
 
     def create(self, validated_data):
