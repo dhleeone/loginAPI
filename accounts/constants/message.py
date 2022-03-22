@@ -10,6 +10,7 @@ REGISTER_SUCCESS = '회원가입이 완료되었습니다.'
 LOGIN_SUCCESS = '로그인이 완료되었습니다.'
 PASSWORD_CHANE_SUCCESS = '비밀번호 변경이 완료되었습니다.'
 
+PHONE_NUMBER_WARNING = "올바른 전화번호를 입력해주세요."
 PASSWORD_LENGTH_WARNING = "패스워드는 8자 이상 12자 이내로 만들어주세요."
 PASSWORD_COMBINATION_WARNING = "패스워드는 영문자 + 숫자 조합으로 만들어주세요."
 PASSWORD_UNIQUE_WARNING = "패스워드에는 이메일/닉네임과 동일한 문자열이 포함되어서는 안됩니다."

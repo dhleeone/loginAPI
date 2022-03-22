@@ -17,7 +17,7 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
     def validate(self, data):
         input_phone = data['phone']
         if any(num.isalpha() for num in input_phone):
-            raise serializers.ValidationError("올바른 전화번호를 입력해주세요.")
+            raise serializers.ValidationError(message.PHONE_NUMBER_WARNING)
         return data
 
 
