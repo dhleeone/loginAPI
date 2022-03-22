@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import AnonymousUser
 from .models import User, PhoneVerification
-from .serializers import *
+from .constants import message
 import random
 
 
@@ -23,7 +23,7 @@ class PhoneVerify(APIView):
         input_phone = request.data['phone']
         record = PhoneVerification.objects.filter(phone=input_phone)
         if (record.exists()) and (not record.last().is_expired):
-            return Response({"message": "인증번호가 이미 발급되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": message.CODE_ISSUE_ERROR}, status=status.HTTP_400_BAD_REQUEST)
         else:
             serializer = PhoneVerifySerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -41,18 +41,18 @@ class Register(APIView):
             input_phone = request.data['phone']
             code_record = PhoneVerification.objects.get(security_code=input_code)
             if input_phone != code_record.phone:
-                return Response({'message': '유효한 인증번호가 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             elif input_phone == code_record.phone and code_record.is_expired:
-                return Response({'message': '인증번호가 만료되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.CODE_EXPIRED_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             elif request.data['password'] != request.data['password2']:
-                return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PASSWORD_MISMATCH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 serializer = RegisterSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
-                return Response({'message':'회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
+                return Response({'message': message.REGISTER_SUCCESS}, status=status.HTTP_201_CREATED)
         except PhoneVerification.DoesNotExist:
-            return Response({'message':'전화번호 인증을 진행해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 로그인 ---
@@ -64,9 +64,9 @@ class Login(APIView):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
-            return Response({'message':'로그인이 완료되었습니다.'}, status=status.HTTP_200_OK)
+            return Response({'message': message.LOGIN_SUCCESS}, status=status.HTTP_200_OK)
         else:
-            return Response({'message':'이메일 혹은 패스워드 오류입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.LOGIN_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 유저 정보 조회 ---
@@ -77,9 +77,9 @@ class UserProfile(APIView):
         try:
             instance = User.objects.get(id=current_user.id)
             serializer = UserSerializer(instance)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 비밀번호 변경 ---
@@ -92,25 +92,25 @@ class ResetPassword(APIView):
             code_record = PhoneVerification.objects.get(security_code=input_code)
             instance = User.objects.get(email=input_email)
             if request.user != AnonymousUser():
-                return Response({'message': '접근 권한이 없습니다.'}, status=status.HTTP_403_FORBIDDEN)
+                return Response({'message': message.ACCESS_ERROR}, status=status.HTTP_403_FORBIDDEN)
 
             elif instance.phone != code_record.phone:
-                return Response({'message': '유효한 인증번호가 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             elif instance.phone == code_record.phone and code_record.is_expired:
-                return Response({'message': '인증번호가 만료되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             elif request.data['password'] != request.data['password2']:
-                return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PASSWORD_MISMATCH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             else:
                 serializer = ResetPasswordSerializer(instance, data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
-                return Response({'message': '비밀번호 변경이 완료되었습니다.'}, status=status.HTTP_200_OK)
+                return Response({'message': message.PASSWORD_CHANE_SUCCESS}, status=status.HTTP_200_OK)
 
         except PhoneVerification.DoesNotExist:
-            return Response({'message':'전화번호 인증을 진행해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            return Response({'message':'올바른 이메일 주소를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.EMAIL_NOT_FOUND_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
