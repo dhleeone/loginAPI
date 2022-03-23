@@ -42,7 +42,7 @@ class Register(APIView):
             input_phone = request.data['phone']
             code_record = PhoneVerification.objects.get(security_code=input_code)
             if input_phone != code_record.phone:
-                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.REGISTER_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             elif input_phone == code_record.phone and code_record.is_expired:
                 return Response({'message': message.CODE_EXPIRED_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             elif request.data['password'] != request.data['password2']:
@@ -53,7 +53,7 @@ class Register(APIView):
                 serializer.save()
                 return Response({'message': message.REGISTER_SUCCESS}, status=status.HTTP_201_CREATED)
         except PhoneVerification.DoesNotExist:
-            return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.REGISTER_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 로그인 ---
@@ -83,7 +83,7 @@ class UserProfile(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 비밀번호 변경 ---
+# 비밀번호 재설정 ---
 class ResetPassword(APIView):
     permission_classes = [AllowAny]
     def patch(self, request):
@@ -96,7 +96,7 @@ class ResetPassword(APIView):
                 return Response({'message': message.ACCESS_ERROR}, status=status.HTTP_403_FORBIDDEN)
 
             elif instance.phone != code_record.phone:
-                return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': message.PW_CHANGE_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
             elif instance.phone == code_record.phone and code_record.is_expired:
                 return Response({'message': message.CODE_EXPIRED_ERROR}, status=status.HTTP_400_BAD_REQUEST)
@@ -111,7 +111,7 @@ class ResetPassword(APIView):
                 return Response({'message': message.PASSWORD_CHANE_SUCCESS}, status=status.HTTP_200_OK)
 
         except PhoneVerification.DoesNotExist:
-            return Response({'message': message.PHONE_VERIFICATION_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': message.PW_CHANGE_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({'message': message.EMAIL_NOT_FOUND_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -56,15 +56,15 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(message.PASSWORD_COMBINATION_ERROR)
 
         if not any(char.isalpha() for char in input_password):
-            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_ERROR)
 
         if input_password in input_email \
                 or input_email in input_password:
-            raise serializers.ValidationError(message.PASSWORD_UNIQUE_WARNING)
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
 
         if input_password in input_nickname \
                 or input_nickname in input_password:
-            raise serializers.ValidationError(message.PASSWORD_UNIQUE_WARNING)
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
         return data
 
     def create(self, validated_data):
@@ -107,6 +107,28 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
             'password',
             'password2'
         ]
+
+    def validate(self, data):
+        input_password = data['password']
+        input_email = data['email'].split("@")[0]
+        nickname = User.objects.get(email=data['email']).nickname
+        if not 7 < len(input_password) < 13:
+            raise serializers.ValidationError(message.PASSWORD_LENGTH_ERROR)
+
+        if not any(char.isdigit() for char in input_password):
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_ERROR)
+
+        if not any(char.isalpha() for char in input_password):
+            raise serializers.ValidationError(message.PASSWORD_COMBINATION_ERROR)
+
+        if input_password in input_email \
+                or input_email in input_password:
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
+
+        if input_password in nickname \
+                or nickname in input_password:
+            raise serializers.ValidationError(message.PASSWORD_UNIQUE_ERROR)
+        return data
 
     def update(self, instance, validated_data):
         new_password = make_password(validated_data['password'])

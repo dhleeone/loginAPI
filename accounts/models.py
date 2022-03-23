@@ -32,6 +32,7 @@ class UserManager(BaseUserManager):
         return self._create_user(email, username, password, **extra_fields)
 
 
+# 유저 ---
 class User(AbstractUser):
     first_name = None
     last_name = None
@@ -49,6 +50,7 @@ class User(AbstractUser):
         return self.email
 
 
+# 전화번호 인증 ---
 class PhoneVerification(models.Model):
     phone = models.CharField(max_length=20)
     security_code = models.CharField(max_length=20, blank=True)
