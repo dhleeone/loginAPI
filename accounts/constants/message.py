@@ -1,7 +1,7 @@
 # success message
 REGISTER_SUCCESS = '회원가입이 완료되었습니다.'
 LOGIN_SUCCESS = '로그인이 완료되었습니다.'
-PASSWORD_CHANE_SUCCESS = '패스워드 변경이 완료되었습니다.'
+PASSWORD_CHANGE_SUCCESS = '패스워드 변경이 완료되었습니다.'
 
 # error message
 CODE_ISSUE_ERROR = '인증번호가 이미 발급되었습니다.'

@@ -14,11 +14,10 @@ class PhoneVerifySerializer(serializers.ModelSerializer):
             'security_code'
         ]
 
-    def validate(self, data):
-        input_phone = data['phone']
-        if any(num.isalpha() for num in input_phone):
+    def validate_phone(self, value):
+        if any(num.isalpha() for num in value):
             raise serializers.ValidationError(message.PHONE_NUMBER_ERROR)
-        return data
+        return value
 
 
 # 인증 번호 Serializer ---

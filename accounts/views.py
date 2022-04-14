@@ -15,9 +15,18 @@ import random
 class PhoneVerify(APIView):
     permission_classes = [AllowAny]
     def generate_code(self):
-        code = ""
-        for _ in range(6):
-            code += str(random.randint(0, 9))
+        cnt = 0
+        while True:
+            code = ""
+            for _ in range(6):
+                code += str(random.randint(0, 9))
+            cnt += 1
+            code_list = PhoneVerification.objects.all().values_list('security_code', flat=True)
+            if code not in code_list:
+                break
+            elif cnt == 10:
+                server_error = "500"
+                return server_error
         return code
 
     def post(self, request):
@@ -29,6 +38,8 @@ class PhoneVerify(APIView):
             serializer = PhoneVerifySerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             generated_code = self.generate_code()
+            if self.generate_code() == "500":
+                return Response({"message": "internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             serializer.save(security_code=generated_code)
             return Response({"message": f"인증번호:{generated_code}"}, status=status.HTTP_201_CREATED)
 
@@ -40,10 +51,8 @@ class Register(APIView):
         try:
             input_code = request.data['security_code']
             input_phone = request.data['phone']
-            code_record = PhoneVerification.objects.get(security_code=input_code)
-            if input_phone != code_record.phone:
-                return Response({'message': message.REGISTER_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
-            elif input_phone == code_record.phone and code_record.is_expired:
+            code_record = PhoneVerification.objects.get(phone=input_phone, security_code=input_code)
+            if code_record.is_expired:
                 return Response({'message': message.CODE_EXPIRED_ERROR}, status=status.HTTP_400_BAD_REQUEST)
             elif request.data['password'] != request.data['password2']:
                 return Response({'message': message.PASSWORD_MISMATCH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
@@ -51,6 +60,7 @@ class Register(APIView):
                 serializer = RegisterSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
+                code_record.delete() # 회원가입 성공 시 인증 코드 기록 삭제
                 return Response({'message': message.REGISTER_SUCCESS}, status=status.HTTP_201_CREATED)
         except PhoneVerification.DoesNotExist:
             return Response({'message': message.REGISTER_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
@@ -108,7 +118,8 @@ class ResetPassword(APIView):
                 serializer = ResetPasswordSerializer(instance, data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
-                return Response({'message': message.PASSWORD_CHANE_SUCCESS}, status=status.HTTP_200_OK)
+                code_record.delete()
+                return Response({'message': message.PASSWORD_CHANGE_SUCCESS}, status=status.HTTP_200_OK)
 
         except PhoneVerification.DoesNotExist:
             return Response({'message': message.PW_CHANGE_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
