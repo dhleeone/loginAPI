@@ -60,10 +60,11 @@ class Register(APIView):
                 serializer = RegisterSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
-                code_record.delete() # 회원가입 성공 시 인증 코드 기록 삭제
+                code_record.delete()
                 return Response({'message': message.REGISTER_SUCCESS}, status=status.HTTP_201_CREATED)
         except PhoneVerification.DoesNotExist:
             return Response({'message': message.REGISTER_VERIFY_ERROR}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # 로그인 ---
