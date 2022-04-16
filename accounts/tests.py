@@ -3,7 +3,7 @@ from django.shortcuts import redirect, resolve_url
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework.views import status
-from accounts.models import PhoneVerification
+from accounts.models import *
 
 
 class PhoneVerificationTestCase(APITestCase):
@@ -40,3 +40,41 @@ class RegisterTestCase(APITestCase):
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+
+class LoginTestCase(APITestCase):
+    def setUp(self):
+        self.url = resolve_url('/accounts/login')
+        self.user = User.objects.create(
+            email="test@google.com",
+            nickname="test",
+            phone="01012345678"
+        )
+        self.user.set_password("qwer1234")
+        self.user.save()
+
+    def test_login_success(self):
+        data = {
+            "email": "test@google.com",
+            "password": "qwer1234",
+        }
+        response = self.client.post(self.url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+
+class ProfileTestCase(APITestCase):
+    def setUp(self):
+        self.url = resolve_url('/accounts/profile')
+        self.user = User.objects.create(
+            email="test@google.com",
+            nickname="test",
+            name="test",
+            phone="01012345678",
+        )
+        self.user.set_password("qwer1234")
+        self.user.save()
+
+    def test_get_profile(self):
+        self.client.login(email="test@google.com", password="qwer1234")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
