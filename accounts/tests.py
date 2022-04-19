@@ -40,6 +40,32 @@ class RegisterTestCase(APITestCase):
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_passoword_too_short_error(self):
+        data = {
+            "email": "test6@google.com",
+            "password": "qr12",
+            "password2": "qw12",
+            "nickname": "test6",
+            "name": "테스트",
+            "phone": self.phone_verify.phone,
+            "security_code": self.phone_verify.security_code
+        }
+        response = self.client.post(self.url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_passoword_email_same_error(self):
+        data = {
+            "email": "test6@google.com",
+            "password": "test6",
+            "password2": "test6",
+            "nickname": "test",
+            "name": "테스트",
+            "phone": self.phone_verify.phone,
+            "security_code": self.phone_verify.security_code
+        }
+        response = self.client.post(self.url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class LoginTestCase(APITestCase):
     def setUp(self):
