@@ -1,10 +1,10 @@
-from .views import PhoneVerify
+from ..views import PhoneVerify
 from django.shortcuts import redirect, resolve_url
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework.views import status
-from accounts.models import *
-
+from ..models import *
+from .factories import UserFactory
 
 class PhoneVerificationTestCase(APITestCase):
     def setUp(self):
@@ -25,7 +25,7 @@ class PhoneVerificationTestCase(APITestCase):
 class RegisterTestCase(APITestCase):
     def setUp(self):
         self.url = resolve_url('/accounts/register')
-        self.phone_verify = PhoneVerification.objects.create(phone="01012345678", security_code=PhoneVerify.generate_code(self))
+        self.phone_verify = PhoneVerification.objects.create(phone="0101234567", security_code=PhoneVerify().generate_code())
 
     def test_register_success(self):
         data = {
@@ -67,17 +67,32 @@ class RegisterTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+# class LoginTestCase(APITestCase):
+#     def setUp(self):
+#         self.url = resolve_url('/accounts/login')
+#         self.user = User.objects.create(
+#             email="test@google.com",
+#             nickname="test",
+#             phone="01012345678"
+#         )
+#         self.user.set_password("qwer1234")
+#         self.user.save()
+#
+#     def test_login_success(self):
+#         data = {
+#             "email": "test@google.com",
+#             "password": "qwer1234",
+#         }
+#         response = self.client.post(self.url, data=data, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+
+
 class LoginTestCase(APITestCase):
     def setUp(self):
         self.url = resolve_url('/accounts/login')
-        self.user = User.objects.create(
-            email="test@google.com",
-            nickname="test",
-            phone="01012345678"
-        )
-        self.user.set_password("qwer1234")
-        self.user.save()
-
+        self.user = UserFactory()
     def test_login_success(self):
         data = {
             "email": "test@google.com",
@@ -85,6 +100,7 @@ class LoginTestCase(APITestCase):
         }
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 
 
