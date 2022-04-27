@@ -107,14 +107,7 @@ class LoginTestCase(APITestCase):
 class ProfileTestCase(APITestCase):
     def setUp(self):
         self.url = resolve_url('/accounts/profile')
-        self.user = User.objects.create(
-            email="test@google.com",
-            nickname="test",
-            name="test",
-            phone="01012345678",
-        )
-        self.user.set_password("qwer1234")
-        self.user.save()
+        self.user = UserFactory()
 
     def test_get_profile(self):
         self.client.login(email="test@google.com", password="qwer1234")
