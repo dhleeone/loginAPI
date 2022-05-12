@@ -34,8 +34,13 @@ class UserManager(BaseUserManager):
 
 # 유저 ---
 class User(AbstractUser):
+    class GenderChoices(models.TextChoices):
+        MALE = "M", "남성"
+        FEMALE = "F", "여성"
+
     first_name = None
     last_name = None
+    gender = models.CharField('성별', max_length=1, blank=True, choices=GenderChoices.choices)
     email = models.EmailField(max_length=128, unique=True)
     username = models.CharField(max_length=30, blank=True)
     nickname = models.CharField(max_length=50, unique=True)

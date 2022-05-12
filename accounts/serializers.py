@@ -27,10 +27,14 @@ class SecurityCodeSerializer(serializers.ModelSerializer):
         fields = ['security_code']
 
 
+
+
 # 회원가입 Serializer ---
 class RegisterSerializer(serializers.ModelSerializer):
     security_code = SecurityCodeSerializer(read_only=True)
     password2 = serializers.CharField(max_length=128, read_only=True)
+    gender = serializers.ChoiceField(choices=User.GenderChoices)
+
     class Meta:
         model = User
         fields = [
@@ -41,7 +45,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             'nickname',
             'name',
             'phone',
-            'security_code'
+            'security_code',
+            'gender',
         ]
 
     def validate(self, data):
@@ -90,7 +95,8 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'nickname',
             'name',
-            'phone'
+            'phone',
+            'gender'
         ]
 
 
